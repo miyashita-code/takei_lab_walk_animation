@@ -1,5 +1,11 @@
 .venv
+
+# Ignore all files in the output directory, but keep the directory itself
 output/*
-output/.gitkeep
+# Keep the .gitkeep file in the output directory
+!output/.gitkeep
+
+# Ignore all files in the inputs directory, but keep the directory itself
 inputs/*
-inputs/.gitkeep
+# Keep the .gitkeep file in the inputs directory
+!inputs/.gitkeep
