@@ -70,6 +70,9 @@ This project generates a walking animation based on CSV data input. Follow these
 Open `main.py` and adjust the following parameters as needed:
 
 ```python
+# Specify the path to your CSV file here
+csv_file_path = 'inputs/your_csv_file.csv'
+
 custom_angle_params = {
     'Knee': {'signal_min': 0, 'signal_max': 152, 'angle_min': 100, 'angle_max': 170},
     'Foot': {'signal_min': 0, 'signal_max': 150, 'angle_min': 85, 'angle_max': 140},
@@ -78,7 +81,7 @@ custom_angle_params = {
 custom_bone_lengths = {'L1': 250, 'L2': 300, 'L3': 90}
 custom_hip_position = (400, 100)
 
-animation = WalkingAnimation('walk_sample2.csv', 'custom_output.mp4',
+animation = WalkingAnimation(csv_file_path, 'output/custom_output.mp4',
                              angle_params=custom_angle_params,
                              bone_lengths=custom_bone_lengths,
                              hip_position=custom_hip_position,
@@ -88,6 +91,21 @@ animation = WalkingAnimation('walk_sample2.csv', 'custom_output.mp4',
                              bone_width=2,
                              show_grid=True)
 ```
+
+To use your own CSV file:
+1. Place your CSV file in the `inputs` folder.
+2. Change the `csv_file_path` variable to match your CSV file's name. For example:
+   ```python
+   csv_file_path = 'inputs/my_walking_data.csv'
+   ```
+3. Ensure your CSV file follows the required structure as described in the "Input Data" section.
+
+You can also customize the output file name and location by changing the second argument in the `WalkingAnimation` constructor. For example:
+```python
+animation = WalkingAnimation(csv_file_path, 'output/my_custom_animation.mp4', ...)
+```
+
+Remember to adjust other parameters as needed to match your data and desired animation style.
 
 ## Detailed Parameter Explanations
 

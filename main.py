@@ -6,7 +6,18 @@ import cv2
 import io
 
 class JointCalculator:
+    """
+    A class for calculating joint angles and positions for the walking animation.
+    """
+
     def __init__(self, angle_params=None):
+        """
+        Initialize the JointCalculator with angle parameters.
+
+        Args:
+            angle_params (dict, optional): A dictionary containing angle mapping for each joint.
+                If None, default values will be used.
+        """
         self.default_params = {
             'Knee': {'signal_min': 0, 'signal_max': 152, 'angle_min': 100, 'angle_max': 170},
             'Foot': {'signal_min': 0, 'signal_max': 150, 'angle_min': 85, 'angle_max': 140},
@@ -16,9 +27,29 @@ class JointCalculator:
 
     @staticmethod
     def linear_interpolation(x, x0, y0, x1, y1):
+        """
+        Perform linear interpolation between two points.
+
+        Args:
+            x (float): The input value to interpolate.
+            x0, y0 (float): Coordinates of the first point.
+            x1, y1 (float): Coordinates of the second point.
+
+        Returns:
+            float: The interpolated value.
+        """
         return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
 
     def convert_to_angle(self, df):
+        """
+        Convert the input signals in the dataframe to angles.
+
+        Args:
+            df (pandas.DataFrame): The input dataframe with joint signals.
+
+        Returns:
+            pandas.DataFrame: The dataframe with added angle columns.
+        """
         for joint, params in self.angle_params.items():
             df[f'{joint} (Angle)'] = df[f'{joint}'].apply(
                 lambda x: self.linear_interpolation(
@@ -31,6 +62,17 @@ class JointCalculator:
 
     @staticmethod
     def calculate_joint_positions(hip_joint, L1, L2, L3, theta_h, theta_k, theta_f):
+        """
+        Calculate the positions of knee, ankle, and toe based on joint angles.
+
+        Args:
+            hip_joint (numpy.array): The position of the hip joint.
+            L1, L2, L3 (float): Lengths of hip-to-knee, knee-to-ankle, and foot.
+            theta_h, theta_k, theta_f (float): Angles of hip, knee, and foot.
+
+        Returns:
+            tuple: Positions of knee, ankle, toe, and angles of hip, knee, foot.
+        """
         hip_angle = -theta_h - 90
         knee_pos = hip_joint + L1 * np.array([np.cos(np.radians(hip_angle)), -np.sin(np.radians(hip_angle))])
         knee_angle = 90 - theta_h - theta_k
@@ -40,8 +82,22 @@ class JointCalculator:
         return knee_pos, ankle_pos, toe_pos, hip_angle, knee_angle, foot_angle
 
 class ImageHandler:
+    """
+    A class for handling image operations such as resizing.
+    """
+
     @staticmethod
     def resize_image(image_path, length):
+        """
+        Resize an image while maintaining its aspect ratio.
+
+        Args:
+            image_path (str): Path to the image file.
+            length (int): Desired length of the longer side of the image.
+
+        Returns:
+            PIL.Image: The resized image.
+        """
         image = Image.open(image_path)
         width, height = image.size
         aspect_ratio = width / height
@@ -65,7 +121,24 @@ class ImageHandler:
         return image.resize((int(new_width), int(new_height)), Image.LANCZOS)
 
 class AnimationCanvas:
+    """
+    A class for managing the Tkinter canvas and drawing operations.
+    """
+
     def __init__(self, root, width, height, bg_color='white', joint_color='black', bone_color='blue', bone_width=2, show_grid=True):
+        """
+        Initialize the AnimationCanvas.
+
+        Args:
+            root (tk.Tk): The root Tkinter window.
+            width (int): Width of the canvas.
+            height (int): Height of the canvas.
+            bg_color (str): Background color of the canvas.
+            joint_color (str): Color of the joint markers.
+            bone_color (str): Color of the bones (lines connecting joints).
+            bone_width (int): Thickness of the bone lines.
+            show_grid (bool): Whether to display a grid in the background.
+        """
         self.canvas = tk.Canvas(root, width=width, height=height, bg=bg_color)
         self.canvas.pack()
         self.joint_color = joint_color
@@ -74,6 +147,14 @@ class AnimationCanvas:
         self.show_grid = show_grid
 
     def draw_grid(self, width, height, interval):
+        """
+        Draw a grid on the canvas.
+
+        Args:
+            width (int): Width of the grid.
+            height (int): Height of the grid.
+            interval (int): Spacing between grid lines.
+        """
         if self.show_grid:
             for i in range(0, width, interval):
                 self.canvas.create_line(i, 0, i, height, fill='lightgray')
@@ -81,6 +162,17 @@ class AnimationCanvas:
                 self.canvas.create_line(0, i, width, i, fill='lightgray')
 
     def display_image(self, image, position, angle):
+        """
+        Display a rotated image on the canvas.
+
+        Args:
+            image (PIL.Image): The image to display.
+            position (tuple): The (x, y) position to place the image.
+            angle (float): The rotation angle in degrees.
+
+        Returns:
+            ImageTk.PhotoImage: The displayed image object.
+        """
         rotated_image = image.rotate(angle, expand=True)
         tk_image = ImageTk.PhotoImage(rotated_image)
         x, y = position
@@ -88,6 +180,12 @@ class AnimationCanvas:
         return tk_image
 
     def draw_joints_and_bones(self, hip_joint, knee_pos, ankle_pos, toe_pos):
+        """
+        Draw joints as circles and bones as lines on the canvas.
+
+        Args:
+            hip_joint, knee_pos, ankle_pos, toe_pos (numpy.array): Joint positions.
+        """
         joints = [hip_joint, knee_pos, ankle_pos, toe_pos]
         for joint in joints:
             self.canvas.create_oval(joint[0]-5, joint[1]-5, joint[0]+5, joint[1]+5, fill=self.joint_color)
@@ -97,8 +195,27 @@ class AnimationCanvas:
         self.canvas.create_line(ankle_pos[0], ankle_pos[1], toe_pos[0], toe_pos[1], fill=self.bone_color, width=self.bone_width)
 
 class WalkingAnimation:
+    """
+    Main class for controlling the walking animation.
+    """
+
     def __init__(self, csv_file, output_file, angle_params=None, bone_lengths=None, hip_position=None,
                  bg_color='white', joint_color='black', bone_color='blue', bone_width=2, show_grid=True):
+        """
+        Initialize the WalkingAnimation.
+
+        Args:
+            csv_file (str): Name of the CSV file containing animation data.
+            output_file (str): Name of the output video file.
+            angle_params (dict, optional): Custom angle parameters for joints.
+            bone_lengths (dict, optional): Custom bone lengths.
+            hip_position (tuple, optional): Custom initial hip position.
+            bg_color (str): Background color of the animation.
+            joint_color (str): Color of the joint markers.
+            bone_color (str): Color of the bones.
+            bone_width (int): Thickness of the bone lines.
+            show_grid (bool): Whether to display a grid in the background.
+        """
         self.joint_calculator = JointCalculator(angle_params)
         
         self.df = pd.read_csv(f"inputs/{csv_file}")
@@ -125,6 +242,13 @@ class WalkingAnimation:
         self.out = cv2.VideoWriter(f"output/{output_file}", fourcc, 10.0, (1000, 1000))
 
     def animate(self, frame, is_show_born_joint=False):
+        """
+        Perform animation for a single frame.
+
+        Args:
+            frame (int): The current frame number.
+            is_show_born_joint (bool): Whether to show joints and bones.
+        """
         if frame >= self.total_frames:
             self.out.release()
             self.root.destroy()
@@ -167,6 +291,12 @@ class WalkingAnimation:
         self.root.after(int(1000 / self.frame_rate), self.animate, frame + 1, is_show_born_joint)
 
     def run(self, is_show_born_joint=False):
+        """
+        Start the animation.
+
+        Args:
+            is_show_born_joint (bool): Whether to show joints and bones.
+        """
         try:
             self.animate(0, is_show_born_joint)
             self.root.mainloop()
