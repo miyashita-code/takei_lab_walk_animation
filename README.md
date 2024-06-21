@@ -12,14 +12,14 @@ This project generates a walking animation based on CSV data input. Follow these
 
 1. Open a terminal and create a new directory:
    ```
-   mkdir walk_animation
-   cd walk_animation
+   mkdir your_project_name
+   cd your_project_name
    ```
 
 2. Clone the repository:
    ```
-   git clone https://github.com/your-username/walk-animation.git
-   cd walk-animation
+   git clone https://github.com/miyashita-code/takei_lab_walk_animation.git
+   cd takei_lab_walk_animation
    ```
 
 3. Ensure you have Python 3.9.13 installed. You can download it from the official Python website if needed.
