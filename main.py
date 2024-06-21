@@ -184,7 +184,7 @@ if __name__ == "__main__":
     custom_bone_lengths = {'L1': 250, 'L2': 300, 'L3': 90}
     custom_hip_position = (400, 100)
 
-    animation = WalkingAnimation('walk_sample2.csv', 'custom_output.mp4',
+    animation = WalkingAnimation('data.csv', 'output.mp4',
                                  angle_params=custom_angle_params,
                                  bone_lengths=custom_bone_lengths,
                                  hip_position=custom_hip_position,
