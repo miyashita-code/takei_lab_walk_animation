@@ -26,7 +26,7 @@ This project generates a walking animation based on CSV data input. Follow these
 
 4. Create a virtual environment with Python 3.9.13:
    ```
-   python3.9 -m venv .venv
+   python -3.9 -m venv .venv
    ```
    Note: If `python3.9` doesn't work, try `py -3.9` on Windows or the full path to your Python 3.9.13 executable.
 
